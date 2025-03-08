@@ -1,0 +1,36 @@
+{
+  "name": "finance_tracker_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jayesh",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "yarn pretty",
+    "dev": "nodemon index.js --exec \"npm run lint && node\"",
+    "start": "nodemon index.js -l --ignore static/",
+    "build-default": "yarn clean && yarn browserify && yarn minify",
+    "build-gulp": "gulp",
+    "pretty": "prettier --write \"./**/*.{js,json}\""
+  },
+  "standard": {
+    "ignore": [
+      "static",
+      "rough.js"
+    ]
+  },
+  "resolutions": {
+    "bson": "1.1.4"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-useragent": "^1.0.15",
+    "nodemon": "^3.1.9",
+    "pg": "^8.12.0"
+  }
+}
