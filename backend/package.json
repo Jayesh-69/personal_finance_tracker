@@ -8,7 +8,7 @@
   "scripts": {
     "lint": "yarn pretty",
     "dev": "nodemon index.js --exec \"npm run lint && node\"",
-    "start": "nodemon index.js -l --ignore static/",
+    "start": "nodemon index.js -l --ignore '*dist/'",
     "build-default": "yarn clean && yarn browserify && yarn minify",
     "build-gulp": "gulp",
     "pretty": "prettier --write \"./**/*.{js,json}\""
@@ -31,6 +31,7 @@
     "express-async-errors": "^3.1.1",
     "express-useragent": "^1.0.15",
     "nodemon": "^3.1.9",
-    "pg": "^8.12.0"
+    "pg": "^8.12.0",
+    "sequelize": "^6.37.7"
   }
 }
