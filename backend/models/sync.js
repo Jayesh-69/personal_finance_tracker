@@ -1,5 +1,8 @@
 const { Sequelize } = require("sequelize");
 const sequelize = require("../config/sequelize");
+const loadModules = require("../utils/loadModules");
+
+const models = loadModules("", __dirname);
 
 // Function to create database if it doesn't exist
 async function createDatabaseIfNotExists() {
@@ -15,11 +18,11 @@ async function createDatabaseIfNotExists() {
   try {
     console.log("[ INFO ] Checking if database exists...");
     await tempSequelize.authenticate();
-    
+
     const [results] = await tempSequelize.query(
       `SELECT 1 FROM pg_database WHERE datname = '${process.env.DB_NAME}'`
     );
-    
+
     if (results.length === 0) {
       console.log(`[ INFO ] Database '${process.env.DB_NAME}' does not exist. Creating...`);
       await tempSequelize.query(`CREATE DATABASE "${process.env.DB_NAME}"`);
@@ -27,7 +30,7 @@ async function createDatabaseIfNotExists() {
     } else {
       console.log(`[ INFO ] Database '${process.env.DB_NAME}' already exists.`);
     }
-    
+
   } catch (error) {
     console.error("[ ERROR ] Error checking/creating database:", error.message);
     throw error;
@@ -36,70 +39,32 @@ async function createDatabaseIfNotExists() {
   }
 }
 
-// Function to drop materialized views if they exist
-async function dropMVs() {
-  try {
-    console.log("[ INFO ] Dropping materialized views...");
-    // Example: await sequelize.query("DROP MATERIALIZED VIEW IF EXISTS mv_example CASCADE;");
-  } catch (error) {
-    console.error("[ ERROR ] Error dropping materialized views:", error.message);
-  }
-}
-
 async function sync() {
   try {
     console.log("[ INFO ] Starting database sync...");
-    
+
     // First, ensure database exists
     await createDatabaseIfNotExists();
-    
+
     // Now test connection to the actual database
     console.log("[ INFO ] Connecting to database...");
     await sequelize.authenticate();
     console.log("[ INFO ] Database connection established successfully");
-
-    // IMPORTANT: Import and initialize all models AFTER database connection
-    console.log("[ INFO ] Loading and initializing models...");
-    
-    // Import all models directly to ensure they're registered with sequelize
-    require('./users');
-    require('./transaction');
-    require('./category');
-    
-    console.log("[ INFO ] All models loaded successfully");
-    
-    // Define associations
-    const User = sequelize.models.User;
-    const Transaction = sequelize.models.Transaction;
-    const Category = sequelize.models.Category;
-    
-    // Define relationships
-    if (User && Transaction) {
-      User.hasMany(Transaction, { foreignKey: 'userId', as: 'transactions' });
-      Transaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-    }
-    
-    if (Category && Transaction) {
-      Category.hasMany(Transaction, { foreignKey: 'categoryId', as: 'transactions' });
-      Transaction.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
-    }
-    
-    console.log("[ INFO ] Model associations defined successfully");
-
-    // Drop materialized views
-    await dropMVs();
 
     // Sync the model with the database
     console.log("[ INFO ] Syncing database schema...");
     await sequelize.sync({ force: false, alter: true });
     console.log("[ INFO ] All tables have synced successfully!");
     
+    // IMPORTANT: Import and initialize all models AFTER database connection
+    console.log("[ INFO ] Loading and initializing models...");
+
     // Show created tables
     const tables = await sequelize.query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
       { type: sequelize.QueryTypes.SELECT }
     );
-    
+
     console.log("[ INFO ] Tables in database:");
     tables.forEach(table => {
       console.log(`  - ${table[0]}`);
@@ -108,7 +73,6 @@ async function sync() {
     console.log("[ INFO ] Database sync completed successfully!");
   } catch (error) {
     console.error("[ ERROR ] Error while syncing database:", error);
-    
     if (error.name === 'SequelizeConnectionError') {
       console.error("[ ERROR ] Database connection failed. Please check:");
       console.error("  - Database server is running");
@@ -117,7 +81,6 @@ async function sync() {
     } else if (error.name === 'SequelizeAccessDeniedError') {
       console.error("[ ERROR ] Database access denied. Please check user permissions.");
     }
-    
     throw error;
   }
 }

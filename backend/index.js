@@ -25,8 +25,8 @@ app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
@@ -35,10 +35,10 @@ app.get('/health', (req, res) => {
 // Global error handler
 app.use((error, req, res, next) => {
   console.error('[ ERROR ] Unhandled error:', error);
-  
+
   // Don't send stack trace in production
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   res.status(error.status || 500).json({
     error: {
       message: error.message || 'Internal Server Error',
@@ -47,19 +47,10 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: {
-      message: `Route ${req.method} ${req.originalUrl} not found`
-    }
-  });
-});
-
 async function main() {
   try {
     const load = process.argv.includes("--load");
-    
+
     if (load) {
       console.log("[ INFO ] Starting database sync...");
       await sync();
@@ -69,6 +60,14 @@ async function main() {
 
     // Load routes dynamically
     loadRoutes(app, { dir: __dirname });
+
+    app.use('*', (req, res) => {
+      res.status(404).json({
+        error: {
+          message: `Route ${req.method} ${req.originalUrl} not found`
+        }
+      });
+    });
 
     // Start server
     app.listen(port, () => {

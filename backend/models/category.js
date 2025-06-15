@@ -1,7 +1,9 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Model } = require("sequelize");
 const sequelize = require("../config/sequelize");
 
-const Category = sequelize.define("Category", {
+class Category extends Model {}
+
+Category.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -13,19 +15,17 @@ const Category = sequelize.define("Category", {
     unique: true
   },
   type: {
-    type: DataTypes.ENUM('income', 'expense'),
+    type: DataTypes.ENUM("income", "expense"),
     allowNull: false
   },
   color: {
     type: DataTypes.STRING,
-    allowNull: true,
-    defaultValue: '#007bff'
+    defaultValue: "#007bff"
   },
-  icon: {
-    type: DataTypes.STRING,
-    allowNull: true
-  }
+  icon: DataTypes.STRING
 }, {
+  sequelize,
+  modelName: "Category",
   tableName: "categories",
   timestamps: true
 });
